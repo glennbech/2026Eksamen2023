@@ -36,4 +36,4 @@ jobs:
           --stack-name ${{ env.STACK_NAME }}
           --capabilities CAPABILITY_IAM 
           --region ${{ env.AWS_REGION }} 
-          --s3-bucket pg301-sam-bucket
+          --s3-bucket pgr301-sam-bucket
