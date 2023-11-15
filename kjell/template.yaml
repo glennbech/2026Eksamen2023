@@ -14,7 +14,7 @@ Globals:
 Parameters:
   BucketName:
     Type: String
-    Default: "2026recognition"
+    Default: "kandidat-2026-bucket"
 
 Resources:
   Bucket:
