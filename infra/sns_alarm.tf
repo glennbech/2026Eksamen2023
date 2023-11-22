@@ -6,7 +6,7 @@ resource "aws_cloudwatch_metric_alarm" "threshold" {
   comparison_operator = "GreaterThanThreshold"
   threshold           = "8"
   evaluation_periods  = "2"
-  period              = "90"
+  period              = "60"
   statistic           = "Maximum"
 
   alarm_description = "This alarm goes off as soon as the total amount of deviations for face cover exceeds 8"
