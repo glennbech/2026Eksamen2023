@@ -5,3 +5,7 @@ variable "prefix" {
 variable "image" {
   type = string
 }
+
+variable "alarm_email"  {
+  type = string
+}

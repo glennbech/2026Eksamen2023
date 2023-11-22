@@ -55,7 +55,8 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: eu-west-1
       IMAGE: 244530008913.dkr.ecr.eu-west-1.amazonaws.com/kandidat-2026:latest
-      PREFIX: kandidat-2026-apprunner
+      PREFIX: kandidat-2026
+      ALARM_EMAIL: sago004@student.kristiania.no
     steps:
       - uses: actions/checkout@v3
       - name: Setup Terraform
@@ -68,14 +69,14 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -var="prefix=$PREFIX" -var="image=$IMAGE" -no-color
+        run: terraform plan -var="prefix=$PREFIX" -var="image=$IMAGE" -var="alarm_email=$ALARM_EMAIL" -no-color
         working-directory: ./infra
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
       - name: Terraform Apply
-        run: terraform apply -var="prefix=$PREFIX" -var="image=$IMAGE" -auto-approve
+        run: terraform apply -var="prefix=$PREFIX" -var="image=$IMAGE" -var="alarm_email=$ALARM_EMAIL" -auto-approve
         working-directory: ./infra
