@@ -3,14 +3,15 @@ on:
     branches:
       - '*'
       - '**'
+  workflow_dispatch:
 
 defaults:
   run:
     working-directory: ./kjell
 
 env:
-  AWS_REGION: "eu-west-1"
-  STACK_NAME: "kandidat2026stack"
+  AWS_REGION: eu-west-1
+  STACK_NAME: kandidat2026stack
 
 jobs:
   build-deploy:

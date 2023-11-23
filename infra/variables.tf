@@ -1,4 +1,4 @@
-variable "prefix" {
+variable "candidate" {
   type = string
 }
 
@@ -7,5 +7,9 @@ variable "image" {
 }
 
 variable "alarm_email"  {
+  type = string
+}
+
+variable "region" {
   type = string
 }
