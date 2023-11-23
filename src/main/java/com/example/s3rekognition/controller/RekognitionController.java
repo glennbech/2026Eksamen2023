@@ -29,21 +29,26 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
     private final AmazonS3 s3Client;
     private final AmazonRekognition rekognitionClient;
     private Integer deviations = 0;
-    private Integer personScanned = 0;
+    private Integer imagesScanned = 0;
     private Map<String, Integer> bodyPartViolations;
     private final MeterRegistry meterRegistry;
     private static final Logger logger = Logger.getLogger(RekognitionController.class.getName());
     @Autowired
     public RekognitionController(MeterRegistry meterRegistry) {
+        initializeViolations();
+        this.meterRegistry = meterRegistry;
+        this.s3Client = AmazonS3ClientBuilder.standard().build();
+        this.rekognitionClient = AmazonRekognitionClientBuilder.standard().build();
+    }
+
+    private void initializeViolations() {
         bodyPartViolations = new HashMap<>(){{
+            put("PEOPLE", 0);
             put("FACE", 0);
             put("HEAD", 0);
             put("LEFT_HAND", 0);
             put("RIGHT_HAND", 0);
         }};
-        this.meterRegistry = meterRegistry;
-        this.s3Client = AmazonS3ClientBuilder.standard().build();
-        this.rekognitionClient = AmazonRekognitionClientBuilder.standard().build();
     }
 
     /**
@@ -85,16 +90,15 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
 
             // If any person on an image lacks PPE on the face, it's a violation of regulations
             boolean violation = isViolation(result, "FACE");
-            if (violation) meterRegistry.counter("deviations_face_cover").increment();
+            if (violation) deviations++;
 
             logger.info("scanning " + image.getKey() + "for face cover violation, result " + violation);
             // Categorize the current image as a violation or not.
             int personCount = result.getPersons().size();
-            personScanned += personCount;
             PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, violation);
             classificationResponses.add(classification);
         }
-
+        imagesScanned += images.size();
 
         PPEResponse ppeResponse = new PPEResponse(bucketName, classificationResponses);
         return ResponseEntity.ok(ppeResponse);
@@ -144,7 +148,6 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
             logger.info("scanning " + image.getKey() + "for head cover violation, result " + violation);
             // Categorize the current image as a violation or not.
             int personCount = result.getPersons().size();
-            personScanned += personCount;
             PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, violation);
             classificationResponses.add(classification);
         }
@@ -199,7 +202,6 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
             logger.info("scanning " + image.getKey() + "for hand cover violation, result " + violation);
             // Categorize the current image as a violation or not.
             int personCount = result.getPersons().size();
-            personScanned += personCount;
             PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, violation);
             classificationResponses.add(classification);
         }
@@ -219,6 +221,7 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
     @GetMapping(value = "/scan-ppe-all", consumes = "*/*", produces = "application/json")
     @ResponseBody
     public ResponseEntity<PPEResponse> scanForAllPPE(@RequestParam String bucketName) {
+
         // List all objects in the S3 bucket
         ListObjectsV2Result imageList = s3Client.listObjectsV2(bucketName);
 
@@ -263,16 +266,11 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
             logger.info("scanning " + image.getKey() + " for overall PPE violations");
             // Categorize the current image as a violation or not.
             int personCount = result.getPersons().size();
-            personScanned += personCount;
+            bodyPartViolations.put("PEOPLE", bodyPartViolations.get("PEOPLE")+result.getPersons().size());
             PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, false);
             classificationResponses.add(classification);
         }
-        meterRegistry.gauge("head", bodyPartViolations, map -> map.get("HEAD"));
         PPEResponse ppeResponse = new PPEResponse(bucketName, classificationResponses, bodyPartViolations);
-        logger.info("Missing left hand cover: " + bodyPartViolations.get("LEFT_HAND") +
-                " Missing right hand: " + bodyPartViolations.get("RIGHT_HAND") +
-                " Missing head cover: " + bodyPartViolations.get("HEAD") +
-                " Missing face cover: " + bodyPartViolations.get("FACE"));
         return ResponseEntity.ok(ppeResponse);
     }
 
@@ -294,6 +292,15 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
+
+        Gauge.builder("percentage_deviations", this, value -> {
+            double images = imagesScanned;
+            double violations = deviations;
+
+            return (images > 0) ? (violations / images) * 100 : 0;
+        }).register(meterRegistry);
+
+        /*
         Counter.builder("deviations_face_cover")
                 .register(meterRegistry);
 
@@ -301,6 +308,10 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
                 .register(meterRegistry);
 
         Counter.builder("deviations_hand_cover")
+                .register(meterRegistry);
+         */
+        Gauge.builder("people_scanned", bodyPartViolations, map -> map.get("PEOPLE"))
+                .description("Count of amount of head covers missing")
                 .register(meterRegistry);
 
         Gauge.builder("head", bodyPartViolations, map -> map.get("HEAD"))

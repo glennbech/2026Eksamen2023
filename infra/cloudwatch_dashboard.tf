@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_dashboard" "main" {
-  dashboard_name = var.prefix
+  dashboard_name = var.candidate
   dashboard_body = <<DASHBOARD
 {
   "widgets": [
@@ -10,14 +10,19 @@ resource "aws_cloudwatch_dashboard" "main" {
       "width": 12,
       "height": 6,
       "properties": {
+        "view": "gauge",
+        "yAxis": {
+          "left": {
+            "min": 0,
+            "max": 100
+          }
+        },
         "metrics": [
-          ["${var.prefix}", "deviations_face_cover.value"],
-          ["${var.prefix}", "deviations_head_cover.value"],
-          ["${var.prefix}", "deviations_hand_cover.value"]
+          ["${var.candidate}", "percentage_deviations.value"]
         ],
         "period": 30,
-        "stat": "Sum",
-        "region": "eu-west-1",
+        "stat": "Maximum",
+        "region": "${var.region}",
         "title": "Total number of deviations"
       }
     },
@@ -28,30 +33,23 @@ resource "aws_cloudwatch_dashboard" "main" {
       "width": 14,
       "height": 8,
       "properties": {
-        "view": "gauge",
-        "yAxis": {
-          "left": {
-            "min": 0,
-            "max": 20000
-          }
-        },
         "metrics": [
-          ["${var.prefix}",
+          ["${var.candidate}",
             "scanning_ppe_latency.avg",
             "exception", "none",
             "method", "scanForAllPPE",
             "class", "com.example.s3rekognition.controller.RekognitionController"],
-          ["${var.prefix}",
+          ["${var.candidate}",
             "scanning_ppe_head_latency.avg",
             "exception", "none",
             "method", "scanForHeadPPE",
             "class", "com.example.s3rekognition.controller.RekognitionController"],
-          ["${var.prefix}",
+          ["${var.candidate}",
             "scanning_ppe_face_latency.avg",
             "exception", "none",
             "method", "scanForFacePPE",
             "class", "com.example.s3rekognition.controller.RekognitionController"],
-          ["${var.prefix}",
+          ["${var.candidate}",
             "scanning_ppe_hands_latency.avg",
             "exception", "none",
             "method", "scanForHandPPE",
@@ -59,7 +57,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         ],
         "period": 30,
         "stat": "Average",
-        "region": "eu-west-1",
+        "region": "${var.region}",
         "title": "Average latency of requests"
       }
     },
@@ -73,14 +71,15 @@ resource "aws_cloudwatch_dashboard" "main" {
         "view": "bar",
         "stacked": false,
         "metrics": [
-          ["${var.prefix}", "face.value"],
-          ["${var.prefix}", "left_hand.value"],
-          ["${var.prefix}", "right_hand.value"],
-          ["${var.prefix}", "head.value"]
+          ["${var.candidate}", "people_scanned.value"],
+          ["${var.candidate}", "face.value"],
+          ["${var.candidate}", "left_hand.value"],
+          ["${var.candidate}", "right_hand.value"],
+          ["${var.candidate}", "head.value"]
         ],
         "stat": "Maximum",
         "period": 30,
-        "region": "eu-west-1",
+        "region": "${var.region}",
         "title": "Maximum number of deviations for each bodypart"
       }
     }

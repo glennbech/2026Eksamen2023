@@ -1,6 +1,6 @@
 resource "aws_cloudwatch_metric_alarm" "threshold" {
-  alarm_name  = "${var.prefix}-threshold"
-  namespace   = var.prefix
+  alarm_name  = "${var.candidate}-threshold"
+  namespace   = var.candidate
   metric_name = "deviations_face_cover.value"
 
   comparison_operator = "GreaterThanThreshold"
@@ -14,7 +14,7 @@ resource "aws_cloudwatch_metric_alarm" "threshold" {
 }
 
 resource "aws_sns_topic" "user_updates" {
-  name = "${var.prefix}-alarm-topic"
+  name = "${var.candidate}-alarm-topic"
 }
 
 resource "aws_sns_topic_subscription" "user_updates_sqs_target" {

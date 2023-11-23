@@ -22,7 +22,7 @@
 */
 
 resource "aws_apprunner_service" "service" {
-  service_name = var.prefix
+  service_name = var.candidate
   /*
     In summary, the instance_configuration block is specifying the IAM role
     that App Runner should assume when running the underlying
@@ -58,7 +58,7 @@ resource "aws_apprunner_service" "service" {
   Give it an appropriate name that makes sense within our code
 */
 resource "aws_iam_role" "role_for_apprunner_service" {
-  name               = "2026-apprunner-role"
+  name               = "${var.candidate}-apprunner-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
@@ -99,8 +99,8 @@ data "aws_iam_policy_document" "policy" {
 }
 
 resource "aws_iam_policy" "policy" {
-  name        = "kandidat-2026-apprunner-policy"
-  description = "Policy for apprunner instance I think"
+  name        = "${var.candidate}-apprunner-policy"
+  description = "Policy for apprunner instance"
   policy      = data.aws_iam_policy_document.policy.json
 }
 
