@@ -14,6 +14,11 @@ public class PPEClassificationResponse  implements Serializable  {
         this.violation = violation;
     }
 
+    public PPEClassificationResponse(String fileName, int personCount) {
+        this.fileName = fileName;
+        this.personCount = personCount;
+    }
+
     public String getFileName() {
         return fileName;
     }
