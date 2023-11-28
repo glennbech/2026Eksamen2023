@@ -22,7 +22,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           ["${var.candidate}", "hand_violations.value", { "label": "Hand violations"}],
           ["${var.candidate}", "face_violations.value", { "label": "Face violations"}]
         ],
-        "period": 30,
+        "period": 300,
         "stat": "Maximum",
         "region": "${var.region}",
         "title": "Percentage of violations based on images scanned"
@@ -61,7 +61,7 @@ resource "aws_cloudwatch_dashboard" "main" {
             "class", "com.example.s3rekognition.controller.RekognitionController",
             { "label": "Hand latency"}]
         ],
-        "period": 30,
+        "period": 300,
         "stat": "Average",
         "region": "${var.region}",
         "title": "Average latency of requests per scanning methods"
@@ -84,7 +84,7 @@ resource "aws_cloudwatch_dashboard" "main" {
           ["${var.candidate}", "head.value", { "label": "Heads without PPE"}]
         ],
         "stat": "Maximum",
-        "period": 30,
+        "period": 300,
         "region": "${var.region}",
         "title": "Individual number of deviations for each body part"
       }
