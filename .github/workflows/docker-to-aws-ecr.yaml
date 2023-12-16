@@ -11,7 +11,7 @@ env:
   AWS_REGION: eu-west-1
   IMAGE: 244530008913.dkr.ecr.eu-west-1.amazonaws.com/kandidat-2026sesnur:latest
   CANDIDATE: kandidat-2026sesnur
-  ALARM_EMAIL: sago004@student.kristiania.no
+  ALARM_EMAIL: glenn.bech@gmail.com
 
 jobs:
   # Builds a new container image, and pushes it on every commit to the repository
